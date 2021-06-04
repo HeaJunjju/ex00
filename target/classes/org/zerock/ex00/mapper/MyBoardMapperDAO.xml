@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.zerock.ex00.mapper.MyBoardMapperDAO">
+
+	<!-- 게시물 조회 - 목록2: 페이징 고려: 삭제 요청된 행 포함 -->
+	<!-- <select id="selectMyBoardList" resultType="org.zerock.ex00.domain.MyBoardVO">
+		<![CDATA[
+		 SELECT bno, btitle, bcontent, bwriter, bregdate, bmodDate, bviewsCnt, breplyCnt, bdelFlag 
+		 FROM ( SELECT /*+ INDEX_DESC (a pk_myboard) */ ROWNUM rn, a.* 
+		 FROM book_ex.tbl_myboard a 
+		 WHERE ROWNUM <= ( #{pageNum} * #{rowAmountPerPage} ) 
+		 ) 
+		 WHERE rn >= ( ( #{pageNum} * #{rowAmountPerPage} ) - ( #{rowAmountPerPage} - 1 ) ) 
+		]]>
+	</select> -->
+	
+	<!-- 게시물 조회 - 목록3(페이징, 검색): 삭제 요청된 행 포함 -->
+	<!-- DAO클래스를 사용할 경우 매퍼인터페이스와는 다르게 parameterType을 꼭 명시해야함 -->
+	<select id="selectMyBoardList" 
+	parameterType="org.zerock.ex00.common.paging.MyBoardPagingDTO"
+	resultType="org.zerock.ex00.domain.MyBoardVO">
+		<![CDATA[
+		 SELECT bno, btitle, bcontent, bwriter, bregdate, bmodDate, bviewsCnt, breplyCnt, bdelFlag 
+		 FROM ( SELECT /*+ INDEX_DESC (a pk_myboard) */ ROWNUM rn, a.* 
+		 FROM book_ex.tbl_myboard a 
+		 WHERE 
+		]]> 
+		 <trim prefix="(" suffix=") AND" prefixOverrides="OR"> 
+		 	<foreach item='scope' collection="scopeArray"> 
+		 		<trim prefix="OR"> 
+		 			<choose> 
+		 				<when test="scope == 'T'.toString()"> 
+		 					btitle LIKE '%'||#{keyword}||'%' 
+		 				</when> 
+		 				<when test="scope == 'C'.toString()"> 
+		 					bcontent LIKE '%'||#{keyword}||'%' 
+		 				</when> 
+		 				<when test="scope == 'W'.toString()"> 
+		 					bwriter LIKE '%'||#{keyword}||'%' 
+		 				</when> 
+		 			</choose> 
+		 		</trim> 
+		 	</foreach> 
+		 </trim> 
+		 <![CDATA[ 
+		 ROWNUM <= #{pageNum} * #{rowAmountPerPage} 
+		 ) 
+		 WHERE rn >= ( ( #{pageNum} * #{rowAmountPerPage} ) - ( #{rowAmountPerPage} - 1 ) ) 
+		]]>
+	</select>
+	
+	
+	<!-- 게시물 조회 - 총 게시물 개수(페이징 데이터): 삭제 요청된 행 포함 -->
+	<!-- <select id="selectRowAmountTotal" resultType="Long">
+		<![CDATA[
+		 SELECT count(*) FROM book_ex.tbl_myboard 
+		]]>
+	</select> -->
+	
+	<!-- 게시물 조회 - 총 게시물 개수(페이징, 검색고려): 삭제 요청된 행 포함 -->
+	<select id="selectRowAmountTotal" 
+	parameterType="org.zerock.ex00.common.paging.MyBoardPagingDTO"
+	resultType="Long">
+		<![CDATA[
+		 SELECT count(*) FROM book_ex.tbl_myboard 
+		 
+		]]>
+		 <where> 
+			 <trim prefix="(" suffix=")" prefixOverrides="OR"> 
+				 <foreach item='scope' collection="scopeArray"> 
+					 <trim prefix="OR"> 
+						 <choose> 
+							 <when test="scope == 'T'.toString()"> 
+							 btitle LIKE '%'||#{keyword}||'%' 
+							 </when> 
+							 <when test="scope == 'C'.toString()"> 
+							 bcontent LIKE '%'||#{keyword}||'%' 
+							 </when> 
+							 <when test="scope == 'W'.toString()"> 
+							 bwriter LIKE '%'||#{keyword}||'%' 
+							 </when> 
+						 </choose> 
+					 </trim> 
+				 </foreach> 
+			 </trim> 
+		 </where> 
+	</select>
+	
+	<!-- 게시물 조회 - 총 게시물 개수(페이징 데이터): 삭제 요청된 행 제외 --> 
+	<!-- 아래 문장 사용 시, bdelFlag, bno를 키로 가지는 인덱스 추가 요망(성능) -->
+	<!-- 
+	 <select id="selectRowAmountTotal" resultType="Long">
+		 <![CDATA[
+		 SELECT count(*) FROM book_ex.tbl_myboard 
+		 WHERE bno > 0 AND bdelFlag = 0
+		 ]]>
+	 </select>
+	-->
+	
+	<!-- 게시물 등록1 - selectKey 이용않함 -->
+	<!-- <insert id="insertMyBoard">
+		INSERT INTO book_ex.tbl_myboard VALUES(seq_myboard.nextval, #{btitle}, 
+		#{bcontent}, #{bwriter}, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+	</insert> -->
+	
+	<!-- 게시물 등록2 - selectKey 이용 -->
+	<insert id="insertMyBoardSelectKey" parameterType="org.zerock.ex00.domain.MyBoardVO">
+	 <selectKey keyProperty="bno" order="BEFORE" resultType="long">
+	 	SELECT book_ex.seq_myboard.nextval FROM dual
+	 </selectKey>
+		INSERT INTO book_ex.tbl_myboard VALUES(#{bno}, #{btitle}, #{bcontent},
+		#{bwriter}, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+	</insert>
+	
+	<!-- 게시물 조회 -->
+	<!-- <select id="selectMyBoard" resultType="org.zerock.ex00.domain.MyBoardVO">
+		SELECT * FROM book_ex.tbl_myboard where bno=#{bno}
+	</select> -->
+	
+	<!-- 게시물 삭제 - 사용자 요청 1: 삭제요청, 0: 유지 -->
+	<!-- <update id="updateBdelFlag">
+		UPDATE book_ex.tbl_myboard SET bdelFlag=1 where bno = #{bno}
+	</update> -->
+	
+	<!-- 게시물 삭제 - 관리자 요청 -->
+	<!-- <delete id="deleteMyBoard">
+		DELETE book_ex.tbl_myboard WHERE bno = #{bno} AND bDelFlag = 0
+	</delete> -->
+	
+	<!-- 게시물 삭제 – 삭제 요청된 게시물들 전체 삭제 (관리자) -->
+	<!-- <delete id="deleteAllBoardSetDeleted">
+		DELETE book_ex.tbl_myboard WHERE bdelFlag = 1
+	</delete> -->
+	 
+	<!-- 게시물 수정 -->
+	<!-- <update id="updateMyBoard">
+		 UPDATE book_ex.tbl_myboard 
+		 SET btitle = #{btitle}, 
+		 bcontent = #{bcontent}, 
+		 bmodDate = DEFAULT 
+		 WHERE bno = #{bno} AND bdelFlag = 0
+	</update> -->
+	
+	<!-- 게시물 조회수 증가 : 게시물 조회 시 + 1 -->
+	<!-- <update id="updateBviewsCnt">
+		 UPDATE book_ex.tbl_myboard 
+		 SET bviewsCnt = bviewsCnt + 1 
+		 WHERE bno = #{bno} AND bdelFlag = 0
+	</update> -->
+	<!-- 게시물의 댓글 개수 수정: 댓글추가 시 +1, 댓글삭제 시 -1 -->
+	 
+	<!-- <update id="updateBReplyCnt">
+		 UPDATE book_ex.tbl_myboard 
+		 SET breplyCnt = breplyCnt + #{amount} 
+		 WHERE bno = #{bno} AND bdelFlag = 0
+	</update> -->
+
+</mapper>

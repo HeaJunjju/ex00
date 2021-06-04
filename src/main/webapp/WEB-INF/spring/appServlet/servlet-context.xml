@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+	
+	<!-- Enables Spring AOP -->
+	<aop:aspectj-autoproxy/>
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!-- 정적 리소스를 처리(css와 js ->html은 스프링에서는 안들어감) -->
+	<resources mapping="/resources/**" location="/resources/" /><!-- webapp밑의 resources폴더를 말함 -->
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+ 	<beans:bean id="multipartResolver" 
+     class= "org.springframework.web.multipart.support.StandardServletMultipartResolver"/> 
+	
+	<!-- 이거는 전체적으로 ex00패키지에 모든...거를 bean으로 등록...?처음에는 service따로 
+	뭐 따로 이렇게 나눠서 해줘볼 것 -->
+	<!-- <context:component-scan base-package="org.zerock.ex00" /> -->
+	<!-- service어노테이션 된 클래스는 자동으로 bean 생성/따로 bean태그 해줄 필요가 없음 -->
+	<context:component-scan base-package="org.zerock.ex00.service" />
+	<context:component-scan base-package="org.zerock.ex00.controller" />
+	<!-- DAO 클래스 빈 자동 생성 -->
+	<context:component-scan base-package="org.zerock.ex00.mapperDAO" />
+	<!-- 톰캣 기동시에 해당 패키지에 @Controller @Service @Repository @Component 어노테이션이 
+	정의된 클래스들이 DispatcherServlet이 사용하는 컨텍스트 영역에 빈으로 생성됩니다. -->
+	<!-- <context:component-scan base-package="practice.controller" /> -->
+	<context:component-scan base-package="org.zerock.ex00.common.fileupload" />
+	<context:component-scan base-package="org.zerock.ex00.common.filedownload" />
+	<!-- 멀티파티 업로드 구성을 위한 MultiPartResolver 빈 설정 --> 
+	
+</beans:beans>

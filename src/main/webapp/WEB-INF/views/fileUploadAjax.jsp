@@ -21,7 +21,11 @@
  
 <%-- 다운로드 이미지 표시 영역에 대한 CSS --%>
  <style>
- 
+  
+  
+  
+  
+  
 .bigImageWrapper { 
 	position: absolute; 
 	display: none; 

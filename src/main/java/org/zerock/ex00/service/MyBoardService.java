@@ -3,6 +3,7 @@ package org.zerock.ex00.service;
 import java.util.List;
 
 import org.zerock.ex00.common.paging.MyBoardPagingDTO;
+import org.zerock.ex00.domain.BoardAttachFileVO;
 import org.zerock.ex00.domain.MyBoardVO;
 
 public interface MyBoardService {
@@ -12,6 +13,7 @@ public interface MyBoardService {
 	public Long getRowAmountTotal(MyBoardPagingDTO myBoardPagingDTO); 
 	public long registerBoard(MyBoardVO myBoard);
 	public MyBoardVO getBoard(Long bno);
+	public List<BoardAttachFileVO> listAttachFilesByBno(Long bno);
 	public boolean modifyBoard(MyBoardVO myBoard);
 	public boolean setBoardDeleted(Long bno);
 	public boolean removeBoard(Long bno);

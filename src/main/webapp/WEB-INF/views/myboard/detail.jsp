@@ -11,6 +11,54 @@
 	.txtBoxCmt, .txtBoxComment { 
 	 overflow: hidden; resize: vertical; min-height: 100px; color: black; 
 	} 
+	/* 첨부파일 목록 표시 영역에 대한 CSS */
+ 
+.fileUploadResult { width: 90%; background-color: lightgrey; margin: auto;} 
+ 
+.fileUploadResult ul { display: flex; flex-flow: row; justify-content: center; align-items: center; } 
+ 
+.fileUploadResult ul li { list-style: none; padding: 5px; align-content: center; text-align: center;} 
+ 
+.fileUploadResult ul li img { height: 50px; width: auto; max-height: 100px; overflow: hidden; } 
+	
+	/* 다운로드 이미지 표시 영역에 대한 CSS */
+ 
+.bigImageWrapper { 
+position: absolute; 
+ 
+display: none; 
+ 
+justify-content: center; 
+ 
+align-items: center; 
+ 
+top:0%; 
+ 
+width: 90%; 
+ 
+height: 90%; 
+ 
+background-color: lightgray; 
+ 
+z-index: 100; 
+ } 
+ 
+.bigImage { 
+ 
+position: relative; 
+ 
+display:flex; 
+ 
+justify-content: center; 
+ 
+align-items: center; 
+ } 
+ 
+.bigImage img { 
+ 
+height: 100%; max-width: 100%; width: auto; overflow: hidden; 
+ } 
+
 </style> 
 <!-- favicon.ico 404에러시 코드 제일 위(또는 헤드 태그 안에)넣으면 에러 사라짐 -->
 <link rel="shortcut icon" href="#">
@@ -76,6 +124,26 @@
         <input type='hidden' name='keyword' value='${myBoardPagingDTO.keyword}'>
     </form>
     <%-- 게시물 상세 표시 끝 --%>
+    
+    <div class="row"> 
+	 <div class="col-lg-12"> 
+		 <div class="panel panel-default"> 
+			 <div class="panel-heading">파일첨부</div> 
+			 <div class="panel-body"> 
+				 <div class='form-group bigImageWrapper'> 
+					 <div class='bigImage'> 
+					 <%-- 이미지파일이 표시되는 DIV --%> 
+					 </div> 
+				 </div> 
+				 <div class="form-group fileUploadResult"> 
+					 <ul> 
+					 <!-- 업로드 후 결과처리 로직이 표시될 영역 --> 
+					 </ul> 
+				 </div> 
+			 </div><!-- /.panel-body --> 
+		 </div><!-- /.panel --> 
+	 </div><!-- /.col-lg-12 --> 
+	</div><!-- /.row -->
     
     <%-- 댓글 화면 표시 시작, 붙여넣기 후, 아래의 style 태그 내용은 <div id="page-wrapper"> 태그 위에 옮겨놓을 것 --%> 
 	
@@ -656,5 +724,114 @@ myCommentClsr.removeCmtReply(
 ); 
  */
 </script>
+
+<%-- 첨부파일 처리 관련 자바스크립트 --%> 
+<script type="text/javascript"> 
+function showImage(calledPathImagefileName){ 
+	 
+	 //display 속성의 flex 옵션을 이용하면, 이미지가 웹브라우저의 중앙에 표시됩니다. 
+		$(".bigImageWrapper").css("display","flex").show(); 
+		 
+		 $(".bigImage") 
+		 .html("<img src='${contextPath}/displayThumbnailFile?fileName="+calledPathImagefileName+"'>") 
+		 .animate({width:'100%', height: '100%'}, 0); 
+	} 
+		 
+	//이미지 사라짐(이미지(DIV) 클릭 시). 
+	$(".bigImageWrapper").on("click", function(e){ 
+		 $(".bigImage").animate({width:'0%', height: '0%'}, 0); 
+		 setTimeout(function () { 
+		 	$(".bigImageWrapper").hide(); 
+		 }, 0); 
+	}); 
+
+//페이지 로딩 시, 첨부파일 정보를 가져와서 표시
+ 
+//$(document).ready(function(){ 
+$(function(){ 
+	var bno = '<c:out value="${board.bno}"/>'; 
+	 $.getJSON( 
+	 "/ex00/myboard/getAttachList", 
+	 {bno: bno}, 
+	 //콜백함수
+	 
+	function(jsonArrayUploadResult){ 
+	 
+		if (!jsonArrayUploadResult || jsonArrayUploadResult.length == 0){ 
+		 
+			return ; 
+	 	} 
+	 
+		 console.log(jsonArrayUploadResult); 
+		 
+		var str = ""; 
+		 //각 첨부파일 항목 처리 후, 표시할 HTML 작성 함수
+		 
+		 $(jsonArrayUploadResult).each(function(i, obj){ //obj: BoardAttachFileVO의 JSON 데이터
+		 
+		 //파일이 이미지가 아닌 경우
+		 
+			if(obj.fileType=="F"){ 
+				 str += "<li data-filename='"+obj.fileName+"' data-uploadpath='"+obj.uploadPath 
+				 + "' data-uuid='"+obj.uuid+"' data-filetype='"+obj.fileType+"'>" 
+				 + " <div>" 
+				 + " <span>"+ obj.fileName+"</span><br/>" 
+				 + " <img src='${contextPath}/resources/img/icon-attach.png'" 
+				 + " alt='No Icon' height='15px' width='15px'><br>" 
+				 + " </div>" 
+				 + "</li>"; 
+			 } else if (obj.fileType == "I"){ 
+			 
+				var calledPathThumbnail = encodeURIComponent(obj.uploadPath + "/s_" 
+				 + obj.uuid + "_" + obj.fileName); 
+				 
+				 console.log(calledPathThumbnail); 
+				 str += "<li data-filename='"+obj.fileName+"' data-uploadpath='"+obj.uploadPath 
+				 + "' data-uuid='"+obj.uuid+"' data-filetype='"+obj.fileType+"'>" 
+				 + " <div>" 
+				 + " <span> "+ obj.fileName+"</span><br/>" 
+				 + " <img src='${contextPath}/displayThumbnailFile?fileName="+calledPathThumbnail+"'" 
+				 + " alt='No ThumbNail' height='50px' width='50px'><br>" 
+				 + " </div>" 
+				 + "</li>"; 
+		 
+		 	} 
+	 	}); //각 항목 처리함수 끝
+		 //작성된 항목을 표시
+		 $(".fileUploadResult ul").html(str); 
+	 }//콜백함수 끝
+	 );//.getJSON 함수 끝
+});//자동로딩 끝
+
+//이미지 다운로드 및 표시 함수
+
+//페이지 로딩 시, 첨부파일 정보를 가져와서 표시
+//$(document).ready(function(){
+
+	
+// 첨부파일 다운로드
+$(".fileUploadResult ul").on("click","li", function(e){ 
+	// alert("첨부파일 다운로드 시작");
+		 
+	var objLi = $(this); 
+		 
+		 
+	var downloadedPathFileName = encodeURIComponent(objLi.data("uploadpath")+"/" + objLi.data("uuid")+"_" + objLi.data("filename")); 
+		 
+		 
+	if(objLi.data("filetype") == "I"){ 
+		 
+		//이미지파일일 경우, 원본이미지를 확대표시
+		 showImage(downloadedPathFileName.replace(new RegExp(/\\/g),"/")); 
+		 
+	} else if(objLi.data("filetype") == "F") { 
+		 
+		//이미지가 이닐 경우, 다운로드 수행
+		 self.location ="${contextPath}/fileDownloadAjax?fileName="+downloadedPathFileName; 
+	} 
+});
+
+</script> 
+
 
 <%@ include file="../myinclude/myfooter.jsp" %>

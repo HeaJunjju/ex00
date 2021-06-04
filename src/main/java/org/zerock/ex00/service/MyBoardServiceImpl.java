@@ -6,12 +6,17 @@ package org.zerock.ex00.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.zerock.ex00.common.paging.MyBoardPagingDTO;
+import org.zerock.ex00.domain.BoardAttachFileVO;
 import org.zerock.ex00.domain.MyBoardVO;
+import org.zerock.ex00.mapper.BoardAttachFileMapper;
 import org.zerock.ex00.mapper.MyBoardMapper;
 import org.zerock.ex00.mapperDAO.MyBoardDAO;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.log4j.Log4j;
 
 /**
@@ -22,6 +27,7 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @Service
 @AllArgsConstructor
+@Data
 //컴파일 되서 클래스 만들어질 때 모든 필드 초기화하는 생성자 만들어짐
 public class MyBoardServiceImpl implements MyBoardService {
 
@@ -29,6 +35,8 @@ public class MyBoardServiceImpl implements MyBoardService {
 	
 	//DAO 빈 주입(생성자를 이용한 자동 주입)
 	private MyBoardDAO myBoardDAO;
+	
+	private BoardAttachFileMapper boardAttachFileMapper ; 
 	
 //	@Override
 //	public List<MyBoardVO> getBoardList() {
@@ -52,6 +60,7 @@ public class MyBoardServiceImpl implements MyBoardService {
 		//return myBoardDAO.selectRowAmountTotal(myBoardPagingDTO); 
 	}
 
+	@Transactional(propagation = Propagation.REQUIRED) 
 	@Override
 	public long registerBoard(MyBoardVO myBoard) {
 		log.info("MyBoardService.registerBoard()에 전달된 MyBoardVO: "+myBoard);
@@ -59,6 +68,20 @@ public class MyBoardServiceImpl implements MyBoardService {
 		myBoardMapper.insertMyBoardSelectKey(myBoard);
 //		System.out.println("MyBoardService에서 등록된 게시물의 bno: "+myBoard.getBno());
 //		
+		//첨부파일이 없는 경우, 메서드 종료
+		 
+		if (myBoard.getAttachFileList() == null || myBoard.getAttachFileList().size() <= 0) { 
+		 
+			return myBoard.getBno(); 
+		} 
+		 //첨부파일이 있는 경우, boardVO의 bno 값을 첨부파일 정보 VO에 저장 후, tbl_myAttachFiles 테이블에 입력
+		 
+		 myBoard.getAttachFileList().forEach(attachFile -> { 
+		 attachFile.setBno(myBoard.getBno()); 
+		 	boardAttachFileMapper.insertAttachFile(attachFile); 
+		 }); 
+
+		
 //		return myBoard.getBno();
 //		myBoardDAO.insertMyBoardSelectKey(myBoard);
 		System.out.println("MyBoardService에서 등록된 게시물의 bno: "+myBoard.getBno());
@@ -74,6 +97,15 @@ public class MyBoardServiceImpl implements MyBoardService {
 		
 		return myBoardMapper.selectMyBoard(bno);
 	}
+	
+	//게시물의 첨부파일 조회
+	@Override
+	public List<BoardAttachFileVO> listAttachFilesByBno(Long bno) { 
+		 System.out.println("첨부파일에 대한 게시물번호(bno): " + bno); 
+		 
+		return boardAttachFileMapper.selectAttachFilesByBno(bno); 
+	} 
+
 
 	@Override
 	public boolean modifyBoard(MyBoardVO myBoard) {

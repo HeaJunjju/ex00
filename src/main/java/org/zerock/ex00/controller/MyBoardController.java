@@ -1,6 +1,10 @@
 package org.zerock.ex00.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,9 +12,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.ex00.common.paging.MyBoardPagingCreatorDTO;
 import org.zerock.ex00.common.paging.MyBoardPagingDTO;
+import org.zerock.ex00.domain.BoardAttachFileVO;
 import org.zerock.ex00.domain.MyBoardVO;
 import org.zerock.ex00.service.MyBoardService;
 
@@ -78,6 +84,21 @@ public class MyBoardController {
 ////	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/register")
 	public String registerNewBoard(MyBoardVO myBoard, RedirectAttributes redirectAttr) {
+		
+		System.out.println("================ myBoardVO ================="); 
+		 
+		System.out.println("myBoardVO: "+myBoard.toString()); 
+		System.out.println("============= attachFileInfo ============="); 
+
+		if (myBoard.getAttachFileList() != null) { 
+			 
+			myBoard.getAttachFileList() 
+			 .forEach(attachFile -> System.out.println("파일정보:"+attachFile.toString())); 
+		} 
+
+		System.out.println("======= End myBoard & attachFileInfo ======="); 
+
+		
 		log.info("컨트롤러 - 게시물 등록: "+myBoard);
 		
 		long bno = myBoardService.registerBoard(myBoard);
@@ -109,6 +130,18 @@ public class MyBoardController {
 		model.addAttribute("board", myBoardService.getBoard(bno));
 		log.info("컨트롤러 - 화면으로 전달할 model: "+model);
 	}
+	
+	//################## 특정 게시물의 첨부파일 정보를 JSON으로 전달 #####################################
+	@GetMapping(value = "/getAttachList", 
+	 produces = {"application/json;charset=UTF-8" }) 
+	@ResponseBody
+	public ResponseEntity<List<BoardAttachFileVO>> listAttachFilesOfArticle(Long bno) { 
+		 System.out.println("컨트롤러: 첨부파일관련 게시뭄번호(bno): " + bno); 
+		 
+		return new ResponseEntity<List<BoardAttachFileVO>>(myBoardService.listAttachFilesByBno(bno), 
+		 HttpStatus.OK); 
+	 } 
+
 	
 	@GetMapping("/modify")//2개한테 공통적으로 매필 걸 수 있음,
 	//2개나 3개 여러개에 매핑걸 때는 리턴타입없이 void로 해야함(jsp를 어디에 요청할지 모름)

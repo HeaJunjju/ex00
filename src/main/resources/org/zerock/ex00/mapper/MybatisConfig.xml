@@ -5,6 +5,10 @@
 <configuration>
 	<!-- 이제 이 파일은 typeAlias지정하는거에만 사용하는 용도가 됨 -->
 
+	<typeAliases>
+		<typeAlias type="org.zerock.ex00.domain.BoardAttachFileVO" alias="myBoardAttachFileVO"/>
+	</typeAliases>
+
 	<!-- <typeAliases>
 		<typeAlias alias="myBoard" type="org.zerock.ex00.domain.MyBoardVO"/>
 	</typeAliases> -->

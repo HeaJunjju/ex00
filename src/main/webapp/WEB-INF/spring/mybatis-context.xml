@@ -83,13 +83,14 @@
  class="org.mybatis.spring.SqlSessionFactoryBean"> 
  <property name="dataSource" ref="dataSource"></property> 
  <!-- 이제 MybatisConfig.xml 파일이 필요가 없어져서 주석 -->
- <!-- <property name="configLocation" value="classpath:org/zerock/ex00/mapper/MybatisConfig.xml"/> -->
+ <property name="configLocation" value="classpath:org/zerock/ex00/mapper/MybatisConfig.xml"/>
  <property name="mapperLocations">
  <list>
  <value>classpath:org/zerock/ex00/mapper/MyBoardMapper.xml</value>
  <value>classpath:org/zerock/ex00/mapper/MyReplyMapper.xml</value>
  <!-- <value>classpath:org/zerock/ex00/mapper/MyMemberMapper.xml</value> -->
  <value>classpath:org/zerock/ex00/mapper/MyBoardMapperDAO.xml</value>
+ <value>classpath:org/zerock/ex00/mapper/BoardAttachFileMapper.xml</value>
  </list>
  </property> 
 

@@ -9,4 +9,5 @@ public interface BoardAttachFileMapper {
 	public void deleteAttachFile(String uuid);
 	public List<BoardAttachFileVO> selectAttachFilesByBno(Long bno);
 	public void deleteAttachFilesByBno(Long bno);
+	public List<BoardAttachFileVO> selectAttachFilesBeforeOneDay();
 }

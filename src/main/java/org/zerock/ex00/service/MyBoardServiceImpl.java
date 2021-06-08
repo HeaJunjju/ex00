@@ -36,7 +36,7 @@ public class MyBoardServiceImpl implements MyBoardService {
 	//DAO 빈 주입(생성자를 이용한 자동 주입)
 	private MyBoardDAO myBoardDAO;
 	
-	private BoardAttachFileMapper boardAttachFileMapper ; 
+	private BoardAttachFileMapper boardAttachFileMapper; 
 	
 //	@Override
 //	public List<MyBoardVO> getBoardList() {
@@ -106,13 +106,32 @@ public class MyBoardServiceImpl implements MyBoardService {
 		return boardAttachFileMapper.selectAttachFilesByBno(bno); 
 	} 
 
-
+	@Transactional
 	@Override
 	public boolean modifyBoard(MyBoardVO myBoard) {
 		log.info("서비스에서의 게시물 수정 메소드(modify)"+myBoard);
 		
+		Long bno = myBoard.getBno();
+		
+		//게시물 변경 시, 기존 첨부파일을 모두 삭제되어 전달된 첨부파일 정보가 없는 경우도 있으므로
+		//첨부파일 삭제는 무조건 처리합니다.
+		boardAttachFileMapper.deleteAttachFilesByBno(bno); 
+		
+		//게시물 수정: tbl_myboard 테이블에 수정
+		boolean boardModifyResult = myBoardMapper.updateMyBoard(myBoard) == 1 ; 
+
+		//게시물 수정이 성공하고, 첨부파일이 있는 경우에만 다음작업 수행
+		//첨부파일 정보 저장: tbl_myAttachFiles 테이블에 저장
+		if (boardModifyResult && myBoard.getAttachFileList().size() > 0) { 
+			myBoard.getAttachFileList().forEach( 
+				attachFile -> { 
+					attachFile.setBno(bno); 
+					boardAttachFileMapper.insertAttachFile(attachFile); 
+				} 
+			); 
+		} 
 		//게시물 정보 수정, 수정된 행수가 1 이면 True.
-		return myBoardMapper.updateMyBoard(myBoard)==1;
+		return boardModifyResult;
 	}
 
 	@Override
@@ -122,10 +141,19 @@ public class MyBoardServiceImpl implements MyBoardService {
 		return myBoardMapper.updateBdelFlag(bno)==1;
 	}
 
+	@Transactional
 	@Override
 	public boolean removeBoard(Long bno) {
 		log.info("MyBoardService.removeBoard()에 전달된 bno: "+bno);
-		
+		//데이터베이스 첨부파일 정보 삭제
+		//첨부파일이 없어도 SQL은 정상처리됨(0개 행이 삭제)
+		//테이블의 외래키(FK)에 ON DELETE CASCADE 옵션이 사용된 경우,
+		//첨부파일 정보 삭제는 데이터베이스에 의해 자동으로 처리되므로
+		//아래의 실행문은 필요없습니다.
+		 
+		boardAttachFileMapper.deleteAttachFilesByBno(bno); 
+
+		//게시물정보 삭제가 정상처리되면, true 반환
 		return myBoardMapper.deleteMyBoard(bno)==1;
 	}
 

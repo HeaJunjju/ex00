@@ -49,5 +49,17 @@
 ]]>
 </delete> 
 
+<!-- 하루 전의 첨부파일 정보 조회 -->
+ 
+<select id="selectAttachFilesBeforeOneDay" resultType="org.zerock.ex00.domain.BoardAttachFileVO">
+ 
+<![CDATA[
+ SELECT * FROM book_ex.tbl_myAttachFiles 
+ WHERE uploadpath = 'C:\upload\' || TO_CHAR(sysdate -1 ,'yyyy\mm\dd') 
+ 
+]]>
+ 
+</select>
+
 
 </mapper>

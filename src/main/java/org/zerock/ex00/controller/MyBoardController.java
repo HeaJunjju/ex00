@@ -1,5 +1,8 @@
 package org.zerock.ex00.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,15 +220,21 @@ public class MyBoardController {
 	public String removeBoard(@RequestParam("bno") Long bno, MyBoardPagingDTO myBoardPagingDTO, RedirectAttributes redirectAttr) {
 		log.info("컨트롤러 - 게시물 삭제: 삭제되는 글번호: "+bno);
 		log.info("컨트롤러 - 전달된 MyBoardPagingDTO: "+ myBoardPagingDTO); 
+		
+		//첨부파일 정보를 저장할 리스트 객체 생성
+		List<BoardAttachFileVO> attachFileList = myBoardService.listAttachFilesByBno(bno); 
+
 
 		if(myBoardService.removeBoard(bno)) {
+			//첨부파일 삭제(MyBoardController에 새로 추가된 메서드)
+			removeAttachFiles(attachFileList); 
+			
 			redirectAttr.addFlashAttribute("result", "successRemove");
+			redirectAttr.addAttribute("pageNum", myBoardPagingDTO.getPageNum()); 
+			redirectAttr.addAttribute("rowAmountPerPage", myBoardPagingDTO.getRowAmountPerPage()); 
+			redirectAttr.addAttribute("scope", myBoardPagingDTO.getScope()); 
+			redirectAttr.addAttribute("keyword", myBoardPagingDTO.getKeyword()); 
 		}
-		redirectAttr.addAttribute("pageNum", myBoardPagingDTO.getPageNum()); 
-		redirectAttr.addAttribute("rowAmountPerPage", myBoardPagingDTO.getRowAmountPerPage()); 
-		
-		redirectAttr.addAttribute("scope", myBoardPagingDTO.getScope()); 
-		redirectAttr.addAttribute("keyword", myBoardPagingDTO.getKeyword()); 
 
 		return "redirect:/myboard/list";
 	}
@@ -250,5 +259,34 @@ public class MyBoardController {
         redirectAttr.addAttribute("keyword", myBoardPagingDTO.getKeyword()); 
 
 		return "redirect:/myboard/list";
+	}
+	
+	//게시물의 모든 첨부파일을 서버에서 삭제
+	private void removeAttachFiles(List<BoardAttachFileVO> attachFileList) {
+		if(attachFileList == null || attachFileList.size()==0) {
+			return;
+		}
+		System.out.println("첨부파일 삭제 시작..................."); 
+		System.out.println("삭제되는 첨부파일 목록: "+ attachFileList.toString()); 
+		
+		attachFileList.forEach(attachFile -> {
+			try {
+				Path file = Paths.get(//"C:\\upload\\" +
+						attachFile.getUploadPath() + "\\" + 
+						attachFile.getUuid() + "_" + 
+						attachFile.getFileName());
+				Files.deleteIfExists(file); 
+				
+				if(Files.probeContentType(file).startsWith("image")) { 
+					Path thumbNail = Paths.get( //"C:\\upload\\" +
+						attachFile.getUploadPath() + "\\s_" + 
+						attachFile.getUuid() + "_" + 
+						attachFile.getFileName() ); 
+					Files.delete(thumbNail); 
+				} 
+			}catch(Exception e) {
+				System.out.println("파일삭제 오류 발생" + e.getMessage());
+			}
+		});
 	}
 }

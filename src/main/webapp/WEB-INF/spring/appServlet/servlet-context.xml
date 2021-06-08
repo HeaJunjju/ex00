@@ -4,7 +4,9 @@
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
@@ -44,5 +46,12 @@
 	<context:component-scan base-package="org.zerock.ex00.common.fileupload" />
 	<context:component-scan base-package="org.zerock.ex00.common.filedownload" />
 	<!-- 멀티파티 업로드 구성을 위한 MultiPartResolver 빈 설정 --> 
+	
+	<context:component-scan base-package="org.zerock.ex00.common.task" /> 
+	
+	<!-- 스캐쥴 아이디: clearUploadRepoJobScheduler, ThreadPool 개수: 10개 -->
+	 <task:scheduler id="clearUploadRepoJobScheduler" pool-size="10" /> 
+	 <task:annotation-driven scheduler="clearUploadRepoJobScheduler" /> 
+	
 	
 </beans:beans>

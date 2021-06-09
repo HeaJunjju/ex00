@@ -88,7 +88,7 @@
  <list>
  <value>classpath:org/zerock/ex00/mapper/MyBoardMapper.xml</value>
  <value>classpath:org/zerock/ex00/mapper/MyReplyMapper.xml</value>
- <!-- <value>classpath:org/zerock/ex00/mapper/MyMemberMapper.xml</value> -->
+ <value>classpath:org/zerock/ex00/mapper/MyMemberMapper.xml</value>
  <value>classpath:org/zerock/ex00/mapper/MyBoardMapperDAO.xml</value>
  <value>classpath:org/zerock/ex00/mapper/BoardAttachFileMapper.xml</value>
  </list>

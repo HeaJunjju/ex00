@@ -43,7 +43,7 @@ public class ClearUploadRepo {
 	
 	//하루 전 날짜 폴더에 있는 파일 중, DB에 정보가 없는 필요없는 파일 삭제
 	//spring-task 의 스케쥴 기능으로 자동으로 실행되는 메서드
-	@Scheduled(cron = "0 14 * * * *") //매일 새벽 3시에 자동으로 실행, 테스트 시에 "0 분 * * * *" 로 수정하세요.
+	@Scheduled(cron = "0 0 3 * * *") //매일 새벽 3시에 자동으로 실행, 테스트 시에 "0 분 * * * *" 로 수정하세요.
 	public void clearNeedlessFiles() throws Exception { 
 		 String strUploadFileRepoDir = "C:\\upload" ; 
 		 System.out.println("파일 검사 작업 시작................."); 
@@ -112,13 +112,22 @@ public class ClearUploadRepo {
 		 System.out.println("-----------------------------------------"); 
 		 
 		//필요없는 파일 삭제
-		for (File needlessFile : needlessFileArray) { 
-			//삭제파일 정보 표시(DB에 정보가 없는 파일)
-			 System.out.println("=====다음의 파일들이 삭제됩니다.================"); 
-			 System.out.println("필요없는 파일 이름: " + needlessFile.getAbsolutePath()); 
-			 
-			//필요없는 파일 삭제
-			needlessFile.delete(); 
-		 } 
+		 if (needlessFileArray == null) { 
+			 System.out.println("===== 삭제할 파일이 없습니다.================"); 
+			 return; 
+		  } else { 
+		  
+			 for (File needlessFile : needlessFileArray) { 
+			  
+			  
+				 //삭제파일 정보 표시(DB에 정보가 없는 파일)
+				  System.out.println("=====다음의 파일들이 삭제됩니다.================"); 
+				  System.out.println("필요없는 파일 이름: " + needlessFile.getAbsolutePath()); 
+				  
+				 //필요없는 파일 삭제
+				  
+				 needlessFile.delete(); 
+			 } 
+		  }
 	 }
 }

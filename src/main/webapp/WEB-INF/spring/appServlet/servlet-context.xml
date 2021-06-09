@@ -47,6 +47,8 @@
 	<context:component-scan base-package="org.zerock.ex00.common.filedownload" />
 	<!-- 멀티파티 업로드 구성을 위한 MultiPartResolver 빈 설정 --> 
 	
+	<context:component-scan base-package="org.zerock.ex00.common.security" /> 
+	
 	<context:component-scan base-package="org.zerock.ex00.common.task" /> 
 	
 	<!-- 스캐쥴 아이디: clearUploadRepoJobScheduler, ThreadPool 개수: 10개 -->

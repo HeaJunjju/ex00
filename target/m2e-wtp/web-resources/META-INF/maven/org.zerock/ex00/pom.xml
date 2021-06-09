@@ -23,7 +23,7 @@
 </dependency>
 
 <!-- 새로 추가: spring-security -->
-<!-- <dependency>
+<dependency>
     <groupId>org.springframework.security</groupId>
     <artifactId>spring-security-core</artifactId>
     <version>5.3.8.RELEASE</version>
@@ -43,7 +43,7 @@
     <artifactId>spring-security-taglibs</artifactId>
     <version>5.3.8.RELEASE</version>
 </dependency>
- -->
+
 <!-- 새로 추가: 이미지에 대한 썸네일 이미지 생성 라이브러리 thumbnailator -->
 <dependency>
     <groupId>net.coobird</groupId>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- 사용자 password 암호화 처리 빈: BCrypt 방식 암호화 -->
+	<bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+	<!-- 사용자 password 암호화 처리 빈: 암호화 하지 않음. -->
+	<!--<bean id="myNoPwEncryptPasswordEncoder" 
+	 class="com.spring5212.mypro00.common.security.MyNoPwEncryptPasswordEncoder" /> -->
+ 	<bean id="myMemberDetailsService" class="org.zerock.ex00.common.security.MyMemberDetailsService"/>
+ 	<security:http>
+ 	<!-- csrf 기능 활성화(디폴트): <security:csrf/>, 비활성화: <security:csrf disabled="true" /> -->
+	<!-- 요청 URL에 대한 권한 설정 -->
+	<!-- pattern 속성에는 contextPath를 포함하지 않습니다. auto-config="true" -->
+	<!-- access에 설정하는 권한을 ROLE을 통해서 설정하는 경우, 권한이름은 ROLE_로 시작해야 함 -->
+ 	
+ 	<!-- /**는 모든 url을 뜻함 -->
+ 	<!-- <security:intercept-url pattern="/**" access="permitAll" /> -->
+ 	<security:intercept-url pattern="/" access="permitAll"/>
+ 	<security:intercept-url pattern="/myboard/list" access="permitAll"/>
+ 	<security:intercept-url pattern="/myboard/modify" access="hasRole('ROLE_MEMBER')" /> 
+ 	<security:intercept-url pattern="/myboard/register" access="hasAnyRole('ROLE_MEMBER','ROLE_USER' )" /> 
+ 	<security:intercept-url pattern="/myboard/detail" access="hasRole('ROLE_ADMIN')" /> 
+ 	
+ 	<!-- 로그인 된 상태에서는 로그인이나 회원가입 화면에 접근 못하도록 함 -->
+	<!-- <security:intercept-url pattern="/myLoginPage" access="isAnonymous()" /> -->
+	<!-- <security:intercept-url pattern="/myMember/register" access="isAnonymous()" /> -->
+	<!-- 관리자페이지는 관리자만 접근 허용 -->
+	<!-- <security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" /> -->
+	<!-- 정적 리소스는 모두 접근 허용 -->
+	<!-- <security:intercept-url pattern="/resources/**" access="permitAll" /> -->
+ 	
+ 	<security:form-login/>
+ 	
+ 	<security:logout/>
+ 	
+ 	</security:http>
+ 	
+ 	<security:authentication-manager>
+ 		<security:authentication-provider user-service-ref="myMemberDetailsService">
+ 			<security:password-encoder ref="bCryptPasswordEncoder"/>
+ 			<!-- <security:password-encoder ref="myNoPwEncryptPasswordEncoder" /> -->
+ 		</security:authentication-provider>
+ 	</security:authentication-manager>
+
+</beans>

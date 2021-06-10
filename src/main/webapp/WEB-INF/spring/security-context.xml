@@ -33,9 +33,18 @@
 	<!-- 정적 리소스는 모두 접근 허용 -->
 	<!-- <security:intercept-url pattern="/resources/**" access="permitAll" /> -->
  	
- 	<security:form-login/>
+ 	<security:form-login login-page="/login" login-processing-url="/login"
+ 						default-target-url="/myboard/list"/>
  	
- 	<security:logout/>
+ 	<!-- 스프링 시큐리티 자동로그인: 1주일 유지 -->
+ 
+	<!-- Referenced bean 'dataSource' not found 경고는 무시(mybatis-context.xml에 정의되어 있음) -->
+	 <security:remember-me data-source-ref="dataSource" 
+	 remember-me-parameter="remember-me" 
+	 token-validity-seconds ="604800" />
+ 	
+ 	
+ 	<security:logout logout-url="/logout" logout-success-url="/"/>
  	
  	</security:http>
  	

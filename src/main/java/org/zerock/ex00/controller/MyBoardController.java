@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -79,12 +80,13 @@ public class MyBoardController {
 
 	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/register")
 	public void showBoardRegisterPage() {
 		log.info("컨트롤러 - 게시물 등록 페이지 호출");
 	}
 	
-////	@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/register")
 	public String registerNewBoard(MyBoardVO myBoard, RedirectAttributes redirectAttr) {
 		
@@ -154,7 +156,8 @@ public class MyBoardController {
 		model.addAttribute("board", myBoardService.getBoard(bno));
 		log.info("컨트롤러 - 화면으로 전달할 model: "+model);
 	}
-//	
+
+	@PreAuthorize("isAuthenticated() && principal.username == #myBoard.bwriter")
 	@PostMapping("/modify")
 	//@PutMapping("/modify")//put은 전체update, fetch는 부분update 
 	public String modifyBoard(MyBoardVO myBoard, MyBoardPagingDTO myBoardPagingDTO, RedirectAttributes redirectAttr) {
@@ -177,9 +180,12 @@ public class MyBoardController {
 		//return "redirect:/myboard/detail?bno="+myBoard.getBno();
 	}
 //	
+	@PreAuthorize("isAuthenticated() && principal.username == #bwriter")
 	@PostMapping("/delete")
 	//@PutMapping("/delete")	-> RestAPI에서 사용가능
-	public String setBoardDeleted(@RequestParam("bno") Long bno, MyBoardPagingDTO myBoardPagingDTO, //MyBoardVO myBoard,  
+	public String setBoardDeleted(@RequestParam("bno") Long bno, 
+								@RequestParam("bwriter") String bwriter, 
+								MyBoardPagingDTO myBoardPagingDTO, //MyBoardVO myBoard,  
             					RedirectAttributes redirectAttr) {
 		log.info("컨트롤러 - 게시물 삭제(bdelFlag값변경 글번호): "+bno);
 		//log.info("컨트롤러 - 게시물 삭제(전달된 MyBoardVO): " + myBoard);
@@ -216,8 +222,12 @@ public class MyBoardController {
 //	 
 //	}
 	
+	@PreAuthorize("isAuthenticated() && principal.username == #bwriter")
 	@PostMapping("/remove")
-	public String removeBoard(@RequestParam("bno") Long bno, MyBoardPagingDTO myBoardPagingDTO, RedirectAttributes redirectAttr) {
+	public String removeBoard(@RequestParam("bno") Long bno, 
+								@RequestParam("bwriter") String bwriter, 
+								MyBoardPagingDTO myBoardPagingDTO, 
+								RedirectAttributes redirectAttr) {
 		log.info("컨트롤러 - 게시물 삭제: 삭제되는 글번호: "+bno);
 		log.info("컨트롤러 - 전달된 MyBoardPagingDTO: "+ myBoardPagingDTO); 
 		

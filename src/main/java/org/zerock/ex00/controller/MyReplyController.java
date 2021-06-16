@@ -2,6 +2,7 @@ package org.zerock.ex00.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,7 +81,7 @@ public class MyReplyController {
 	//브라우저에서 http://localhost:8080/replies/pages/229376/1.json  <--JSON형식으로 표시됨
 	
 	//게시물에 대한 댓글 등록: rno 반환 
-	//@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(value="/{bno}/new", produces= {"text/plain; charset=UTF-8"})
 	public ResponseEntity<String> registerReplyForBoard(@PathVariable("bno") Long bno,
 														@RequestBody MyReplyVO myReply){
@@ -99,7 +100,7 @@ public class MyReplyController {
 	}
 	
 	//게시물에 대한 댓글의 답글 등록: rno 반환 
-	//@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(value="/{bno}/{prno}/new", 
 			//웹브라우저로부터 받아서 메소드가 사용하는 값의 MIME유형을 지정
 				consumes= {"application/json; charset=UTF-8"},
@@ -141,7 +142,7 @@ public class MyReplyController {
 	
 	//HTTP, PUT: 리소스의 모든 것을 업데이트 한다,  PATCH : 리소스의 일부를 업데이트 한다. 
 	//  따라서, PUT은 누락된 값 --> null로 처리 -> db에서 DEFAULT 등으로 처리해서 차이가 거의 없다. //게시물에 대한 특정 댓글 수정 
-	//@PreAuthorize("principal.username == #myReply.rwriter") 
+	@PreAuthorize("isAuthenticated() && principal.username == #myReply.rwriter") 
 	@RequestMapping(value = "/{bno}/{rno}",  
 	                method = { RequestMethod.PUT, RequestMethod.PATCH },  
 	                consumes = "application/json; charset=UTF-8",  
@@ -164,10 +165,11 @@ public class MyReplyController {
 	} 
 
 	//게시물에 대한 특정 댓글 삭제 
-	//@PreAuthorize("principal.username == #myReply.rwriter") 
+	@PreAuthorize("isAuthenticated() && principal.username == #myReply.rwriter") 
 	@DeleteMapping(value = "/{bno}/{rno}", produces = { "text/plain; charset=UTF-8" }) 
 	public ResponseEntity<String> removeReply(@PathVariable("bno") Long bno,  
-											@PathVariable("rno") Long rno) {  
+											@PathVariable("rno") Long rno, 
+											@RequestBody MyReplyVO myReply) {  
 		log.info("댓글-컨트롤러 - 댓글 삭제-URI 추출 bno: " + bno); 
 		log.info("댓글-컨트롤러 - 댓글 삭제-URI 추출 rno: " + rno); 
 		int delCnt = myReplyService.removeReply(bno, rno); 

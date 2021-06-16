@@ -27,9 +27,13 @@
  	<!-- <security:intercept-url pattern="/**" access="permitAll" /> -->
  	<security:intercept-url pattern="/" access="permitAll"/>
  	<security:intercept-url pattern="/myboard/list" access="permitAll"/>
+ 	<security:intercept-url pattern="/myboard/register" access="permitAll"/>
+ 	<!-- <security:intercept-url pattern="/myboard/register" access="isAuthenticated()"/> --><!-- 작동안된다는데 세상 잘되는데.. -->
+ 	
+<!--  	<security:intercept-url pattern="/myboard/list" access="permitAll"/>
  	<security:intercept-url pattern="/myboard/modify" access="hasRole('ROLE_MEMBER')" /> 
  	<security:intercept-url pattern="/myboard/register" access="hasAnyRole('ROLE_MEMBER','ROLE_USER' )" /> 
- 	<security:intercept-url pattern="/myboard/detail" access="hasRole('ROLE_ADMIN')" /> 
+ 	<security:intercept-url pattern="/myboard/detail" access="hasRole('ROLE_ADMIN')" />  -->
  	
  	<!-- 로그인 된 상태에서는 로그인이나 회원가입 화면에 접근 못하도록 함 -->
 	<!-- <security:intercept-url pattern="/myLoginPage" access="isAnonymous()" /> -->
@@ -52,7 +56,9 @@
 	 remember-me-parameter="remember-me" 
 	 token-validity-seconds ="604800" />
  	
- 	
+ 	<!-- alert추가해서 처리하고 싶으면 아래처럼
+ 	하지만 보통 그냥 바로 메인페이지 보여줌 -->
+ 	<!-- <security:logout logout-url="/logout" logout-success-url="/?logout"/> -->
  	<security:logout logout-url="/logout" logout-success-url="/"/>
  	
  	</security:http>

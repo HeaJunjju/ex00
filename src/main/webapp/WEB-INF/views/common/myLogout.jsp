@@ -29,12 +29,12 @@ pageEncoding="UTF-8"%>
 <h2 class="panel-title">Really Logout ?</h2>
 </div>
 <div class="panel-body">
-<form role="form" method='post' action="${contextPath}/logout">
+<form role="form" id="frmMyLogout" method='post' action="${contextPath}/logout">
  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
  <fieldset> 
   <div>
  
-	<button type='submit' class="btn btn-lg btn-success btn-block">Log Out</button>
+	<button type='button' class="btn btn-lg btn-success btn-block" id="myLogout">Log Out</button>
 	 
   </div>
  </fieldset>
@@ -69,5 +69,21 @@ pageEncoding="UTF-8"%>
  
 <script src=
 "${contextPath}/resources/dist/js/sb-admin-2.js"></script>
+
+<script> 
+ 
+var frmMyLogout = $("#frmMyLogout"); 
+ $("#myLogout").on("click", function(e){ 
+ 
+	var logoutDecision = confirm("로그아웃 하시겠습니까?"); 
+	 
+	if (!logoutDecision){ 
+	 	alert("로그아웃이 취소되었습니다."); 
+		return ; 
+	} else { 
+		frmMyLogout.submit(); 
+	} 
+ }); 
+</script>
 </body>
 </html>

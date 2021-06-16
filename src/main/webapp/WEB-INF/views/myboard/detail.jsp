@@ -3,6 +3,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>  
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
 
@@ -89,7 +90,12 @@ height: 100%; max-width: 100%; width: auto; overflow: hidden;
                         </div>
                         <div class="col-md-6" style="height: 45px; padding-top:6px;"><!-- vertical-align: middle; -->
                             <div class="button-group pull-right">
-                                <button type="button" id="btnToModify" data-oper="modify" class="btn btn-primary"><span>수정</span></button>
+	                            <sec:authorize access="isAuthenticated()">
+	                            	<sec:authentication property="principal" var="principal"/>
+	                            		<c:if test="${principal.username eq board.bwriter}">
+			                                <button type="button" id="btnToModify" data-oper="modify" class="btn btn-primary"><span>수정</span></button>
+	                            		</c:if>
+	                            </sec:authorize>
                                 <button type="button" id="btnToList" data-oper="list" class="btn btn-info"><span>목록</span></button>
                             </div>
                         </div>
@@ -155,13 +161,16 @@ height: 100%; max-width: 100%; width: auto; overflow: hidden;
 			  <strong style="padding-top: 2px;"> 
 				  <span>댓글&nbsp;<c:out value="${board.breplyCnt}"/>개</span> 
 				  <span>&nbsp;</span> 
-				  <button type="button" id="btnChgCmtReg" class="btn btn-info btn-sm">댓글 작성</button> 
+				  <sec:authorize access="isAuthenticated()" >
+				  	<button type="button" id="btnChgCmtReg" class="btn btn-info btn-sm">댓글 작성</button> 
+				  </sec:authorize> 
 				  <button type="button" id="btnRegCmt" class="btn btn-warning btn-sm" style="display:none">댓글 등록</button> 
 				  <button type="button" id="btnCancelRegCmt" class="btn btn-warning btn-sm" style="display:none">취소</button> 
 			  </strong> 
 		  </p> 
 	   </div> <!-- /.panel-heading -->
 	   <div class="panel-body"> 
+	   <sec:authorize access="isAuthenticated()" >
 		   <!-- 댓글 입력창 시작 -->
 		   <div class="form-group" style="margin-bottom: 5px;"> 
 			   <textarea class="form-control txtBoxCmt" name="rcontent" 
@@ -171,6 +180,7 @@ height: 100%; max-width: 100%; width: auto; overflow: hidden;
 		   </div> 
 		   <hr style="margin-top: 10px; margin-bottom: 10px;"> 
 		   <!-- 댓글 입력창 끝 --> 
+		</sec:authorize>
 		   <ul class="chat"> 
 		   <!-- 댓글 목록 표시 영역 --> 
 		   
@@ -241,6 +251,21 @@ $("#btnToList").on("click", function(){
 <script type="text/javascript" src="${contextPath}/resources/js/mycomment.js"></script>
 
 <script>
+<%--로그인 사용자명 변수에 저장하는 코드는 댓글/답글 자바스크립트 코드 시작 부분으로 이동시킵니다.--%>
+var loginUser = ""; 
+<sec:authorize access="isAuthenticated()"> 
+ loginUser = '<sec:authentication property="principal.username"/>';<%--로그인 사용자명 변수에 저장--%>
+</sec:authorize> 
+
+<%-- HTML에서 일어나는 모든 Ajax 전송 요청에 대하여 csrf 토큰값이 요청 헤더에 설정됨 --%>
+var csrfHeaderName = "${_csrf.headerName}";
+ 
+var csrfTokenValue = "${_csrf.token}"; 
+$(document).ajaxSend(function(e, xhr, options){ 
+ xhr.setRequestHeader(csrfHeaderName, csrfTokenValue); 
+}); 
+
+
 var bnoValue = '<c:out value="${board.bno}"/>';
 
 var commentUL = $(".chat");
@@ -308,10 +333,12 @@ function showCmtList(page){
 					 + ' >'
 					 + replyPagingCreator.replyList[i].rcontent + '</p>'
 					 + ' </div>'; 
+					 <sec:authorize access="isAuthenticated()" >
 				str +=' <div class="btnsReply" style="margin-bottom:10px">'
 					 + ' <button type="button" style="display:in-block" class="btn btn-primary btn-xs btnChgReplyReg"'
 					 + ' ><span>답글 작성</span></button>'
 					 + ' </div>'; 
+					 </sec:authorize>
 				str +=' </div>'
 					 + '</li>'; 
 			}
@@ -428,7 +455,13 @@ $("#btnCancelRegCmt").on("click", function(){
  
 <%--댓글등록 버튼 클릭 이벤트 처리 --%>
 $("#btnRegCmt").on("click", function(){ 
-	 var loginUser = "user9"; 
+	//var loginUser = "user9"; 
+	//로그인 유무 검증
+	if(!loginUser){
+		alert("로그인 후, 등록이 가능합니다.");
+		return;
+	}
+	console.log("댓글 등록 시 logUser: "+loginUser);
 	 
 	var txtBoxCmt = $(".txtBoxCmt").val(); 
 	 
@@ -491,7 +524,18 @@ return ;
 <%--답글 등록 버튼 클릭 이벤트 처리: 답글이 달린 댓글이 있는 페이지 표시--%>
 $(".chat").on("click", ".commentLi .btnRegReply" ,function(){ 
  
-var loginUser = "test8"; 
+//var loginUser = "test8"; 
+//로그인 유무 검증
+<%--로그인 안 한 경우--%> 
+	 
+if(!loginUser){ 
+	alert("로그인 후, 답글 등록이 가능합니다.");  
+	return ; 
+} 
+	 
+console.log("답글 등록 시 loginUser: "+ loginUser);
+	 
+
 var pageNum = frmCmtPagingValue.find("input[name='pageNum']").val(); 
 console.log("답글 추가가 발생된 댓글 페이지 번호: "+ pageNum); 
 
@@ -539,6 +583,29 @@ $(".chat").on("click", ".commentLi p", function(){
  chgBeforeCmtBtn();<%--댓글 등록 상태 초기화--%>
  chgBeforeReplyBtn()<%--다른 답글 등록 상태 초기화--%>
  chgBeforeCmtRepBtns(); <%--다른 답글/댓글 수정 상태 초기화--%>
+ 
+ <%--작성자 변수에 저장--%>
+ 
+ var rwriter = $(this).data("rwriter"); 
+ console.log("rwriter: " + rwriter); 
+ console.log("loginUser: " + loginUser); 
+  
+  
+ <%--로그인 하지 않은 경우--%>
+  
+ if(!loginUser){ 
+	 alert("로그인 후, 수정이 가능합니다."); 
+	 return ; 
+  } 
+  
+ <%--로그인 계정과 작성자가 다른 경우--%>
+  
+ if(rwriter != loginUser){ 
+	 alert("작성자만 수정 가능합니다"); 
+	 return ; 
+  } 
+
+ 
  $(this).parents("li").find(".btnChgReplyReg").attr("style", "display:none"); 
  
 var rcontent = $(this).text(); 
@@ -572,6 +639,22 @@ $(".chat").on("click", ".commentLi .btnModCmt", function(){
  
  
 var rwriterVal = $(this).siblings("p").data("rwriter");
+console.log("rwriterVal: " + rwriterVal); 
+console.log("loginUser: " + loginUser); 
+
+<%--로그인 안 한 경우--%>
+
+if(!loginUser){ 
+	alert("로그인 후, 수정이 가능합니다."); 
+	return ; 
+}  
+ 
+<%--로그인 계정과 작성자가 다른 경우--%>
+ 
+if(rwriterVal != loginUser){ 
+	alert("작성자만 수정 가능합니다"); 
+	return ; 
+}
  
 var pageNum = frmCmtPagingValue.find("input[name='pageNum']").val(); 
  console.log("답글 추가가 발생된 댓글 페이지 번호: "+ pageNum); 
@@ -610,7 +693,24 @@ $(".chat").on("click", ".commentLi .btnDelCmt", function(){
 <%--작성자 변수에 저장--%>
  
 var rwriterVal = $(this).siblings("p").data("rwriter");
+console.log("rwriterVal: " + rwriterVal); 
+console.log("loginUser: " + loginUser); 
+
+<%--로그인 하지 않은 경우--%>
+
+if(!loginUser){ 
+	alert("로그인 후, 삭제가 가능합니다."); 
+	return ; 
+} 
  
+ 
+<%--로그인 계정과 작성자가 다른 경우--%>
+ 
+if(rwriterVal != loginUser){ 
+	alert("작성자만 삭제 가능합니다"); 
+	return ; 
+}
+
 var delConfirm = confirm('삭제하시겠습니까?'); 
  
 if(!delConfirm){ 

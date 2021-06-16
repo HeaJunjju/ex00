@@ -35,7 +35,19 @@
 		</div>	 
 	</div>	 
 	<p> 현재 시간은, <strong>${serverTime}</strong>입니다 </p>
+	<p>사용자 principal: <sec:authentication property="principal"/> </p>
+<%--     <p>사용자 authentication: <sec:authentication property="authentication"/> </p> --%>
 </div><%-- /.page-wrapper --%>
+
+<%-- 로그아웃으로 홈페이지 이동한 경우에만 실행됨 --%>
+<c:if test="${param.logout != null}">
+	<script type="text/javascript">
+	 $(document).ready(function(){ 
+	 	alert("로그아웃하였습니다."); 
+	 });
+	</script>
+</c:if>
+
 
 <%@ include file="./myinclude/myfooter.jsp" %>
  

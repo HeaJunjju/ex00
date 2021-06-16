@@ -2,6 +2,7 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
  
  <c:set var="contextPath" value="${pageContext.request.contextPath}" />
  
@@ -47,9 +48,13 @@
 							 value="${board.bmodDate}"/>' 
 							 disabled="disabled" /> 
 							 </div> 
-							 
-							 <button type="button" id="btnModify" data-oper="modify" class="btn btn-default btn-frmModify" >수정</button> 
-							 <button type="button" id="btnRemove" data-oper="remove" class="btn btn-danger btn-frmModify">삭제</button> 
+							 <sec:authorize access="isAuthenticated()" ><!-- 추가: 로그인 유무 확인 -->
+	 							<sec:authentication property="principal" var="principal"/><!-- 추가: 로그인 계정 변수화 -->
+	 							<c:if test="${principal.username eq board.bwriter}"><!-- 추가: 로그인 계정과 작성자 비교 -->
+									 <button type="button" id="btnModify" data-oper="modify" class="btn btn-default btn-frmModify" >수정</button> 
+									 <button type="button" id="btnRemove" data-oper="remove" class="btn btn-danger btn-frmModify">삭제</button> 
+								 </c:if>
+							 </sec:authorize>
 							 <button type="button" id="btnList" data-oper="list" class="btn btn-info btn-frmModify">취소</button> 
 							 
 							 <%-- 추가 --%>
@@ -57,6 +62,7 @@
 							<input type='hidden' name='rowAmountPerPage' value='${myBoardPagingDTO.rowAmountPerPage}'> 
 							<input type='hidden' name='scope' value='${myBoardPagingDTO.scope}'> 
  							<input type='hidden' name='keyword' value='${myBoardPagingDTO.keyword}'> 
+ 							<sec:csrfInput/>
  						</form>
                         </div>
                         <!-- /.panel-body -->
@@ -93,51 +99,84 @@
 			//form의 수정/삭제/목록보기 버튼에 따른 동작 제어
 			var frmModify = $("#frmModify"); 
 
+			var loginUser = "";<%-- 추가 --%>
+			<sec:authorize access="isAuthenticated()"> 
+			 	loginUser = '<sec:authentication property="principal.username"/>'; 
+			</sec:authorize> 
+			
 			$('.btn-frmModify').on("click", function(e){ 
 				//e.preventDefault(); //버튼 유형이 submit가 아니므로 설정할 필요 없음
 				 var operation = $(this).data("oper"); //각 버튼의 data-xxx 속성에 설정된 값을 저장
 				 
-				 alert("operation: "+ operation); 
-				 if(operation == "modify"){ //게시물 수정 요청
-					var strFilesInputHidden = "";
+				 var bwriterVal = '<c:out value="${board.bwriter}"/>';<%-- 추가 --%>
+				 alert("operation: "+ operation + ", bwriterVal: " + bwriterVal);
+				 
+				 if(operation == "list"){ //게시물 목록 화면 요청
+					 	//frmModify.attr("action","${contextPath}/myboard/list").attr("method","get"); 
+					 	//frmModify.empty();
+						var pageNumInput = $("input[name='pageNum']").clone(); 
+						var rowAmountInput = $("input[name='rowAmountPerPage']").clone(); 
+						var scopeInput = $("input[name='scope']").clone(); 				 
+						var keywordInput = $("input[name='keyword']").clone(); 
+	 
+						frmModify.empty(); //form의 모든 input을 삭제
+						  
+						frmModify.attr("action","${contextPath}/myboard/list").attr("method","get"); 
+						frmModify.append(pageNumInput); 
+						frmModify.append(rowAmountInput); 
+						frmModify.append(scopeInput); 
+						frmModify.append(keywordInput); 
+				} else {
 					 
-					//업로드 결과의 li 요소 선택하여 각각에 대하여 다음을 처리
-					$(".fileUploadResult ul li").each(function(i, obj){ 
+					<%--로그인 안 한 경우--%>
 					 
-						var objLi = $(obj); 
-						 strFilesInputHidden 
-							 += " <input type='hidden' name='attachFileList["+i+"].uuid' value='"+objLi.data("uuid")+"'>" 
-							 + " <input type='hidden' name='attachFileList["+i+"].uploadPath' value='"+objLi.data("uploadpath")+"'>" 
-							 + " <input type='hidden' name='attachFileList["+i+"].fileName' value='"+objLi.data("filename")+"'>" 
-							 + " <input type='hidden' name='attachFileList["+i+"].fileType' value='"+ objLi.data("filetype")+"'>" ; 
-					 }); 
-					 console.log(strFilesInputHidden);//테스트 후, 주석처리할 것
-					 frmModify.append(strFilesInputHidden); //form에 추가
-
-					//.attr은 jquery 함수
-					//id가 frmModify인 애의 action속성에 아래와 같은 값을 지정해라
-					//form 태그의 action속성 주는 방법
-				 	frmModify.attr("action", "${contextPath}/myboard/modify"); 
-				 } else if(operation == "remove"){ //게시물 삭제 요청
-				 	//frmModify.attr("action", "${contextPath}/myboard/delete");
-					frmModify.attr("action", "${contextPath}/myboard/remove");
-				 } else if(operation == "list"){ //게시물 목록 화면 요청
-				 	//frmModify.attr("action","${contextPath}/myboard/list").attr("method","get"); 
-				 	//frmModify.empty();
-					var pageNumInput = $("input[name='pageNum']").clone(); 
-					var rowAmountInput = $("input[name='rowAmountPerPage']").clone(); 
-					var scopeInput = $("input[name='scope']").clone(); 				 
-					var keywordInput = $("input[name='keyword']").clone(); 
- 
-					frmModify.empty(); //form의 모든 input을 삭제
-					  
-					frmModify.attr("action","${contextPath}/myboard/list").attr("method","get"); 
-					frmModify.append(pageNumInput); 
-					frmModify.append(rowAmountInput); 
-					frmModify.append(scopeInput); 
-					frmModify.append(keywordInput); 
-				 } 
+					if(!loginUser){ 
+						 alert("로그인 후, 수정/삭제가 가능합니다."); 
+						 
+						return ; 
+					}
+					<%--로그인 계정과 작성자가 다른 경우--%>
+					 
+					if(bwriterVal != loginUser){ 
+						 alert("작성자만 수정/삭제가 가능합니다"); 
+						 
+						return ; 
+					}
+				 
+					 if(operation == "modify"){ //게시물 수정 요청
+						var strFilesInputHidden = "";
+						 
+						//업로드 결과의 li 요소 선택하여 각각에 대하여 다음을 처리
+						$(".fileUploadResult ul li").each(function(i, obj){ 
+						 
+							var objLi = $(obj); 
+							 strFilesInputHidden 
+								 += " <input type='hidden' name='attachFileList["+i+"].uuid' value='"+objLi.data("uuid")+"'>" 
+								 + " <input type='hidden' name='attachFileList["+i+"].uploadPath' value='"+objLi.data("uploadpath")+"'>" 
+								 + " <input type='hidden' name='attachFileList["+i+"].fileName' value='"+objLi.data("filename")+"'>" 
+								 + " <input type='hidden' name='attachFileList["+i+"].fileType' value='"+ objLi.data("filetype")+"'>" ; 
+						 }); 
+						 console.log(strFilesInputHidden);//테스트 후, 주석처리할 것
+						 frmModify.append(strFilesInputHidden); //form에 추가
+	
+						//.attr은 jquery 함수
+						//id가 frmModify인 애의 action속성에 아래와 같은 값을 지정해라
+						//form 태그의 action속성 주는 방법
+					 	frmModify.attr("action", "${contextPath}/myboard/modify"); 
+					 } else if(operation == "remove"){ //게시물 삭제 요청
+					 	//frmModify.attr("action", "${contextPath}/myboard/delete");
+						frmModify.attr("action", "${contextPath}/myboard/remove");
+					 } 
+				}
 				 frmModify.submit() ; //요청 전송
+			}); 
+			
+			<%-- HTML에서 일어나는 모든 Ajax 전송 요청에 대하여 csrf 토큰값이 요청 헤더에 설정됨 --%>
+			var csrfHeaderName = "${_csrf.headerName}";
+			 
+			var csrfTokenValue = "${_csrf.token}"; 
+			$(document).ajaxSend(function(e, xhr, options){ 
+			 xhr.setRequestHeader(csrfHeaderName, csrfTokenValue); 
 			}); 
 			
 			var bnoValue = '<c:out value="${board.bno}"/>'; 
